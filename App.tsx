@@ -1,20 +1,18 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { useColorScheme } from "react-native";
+import { ThemeProvider } from "styled-components";
+import themes from "./src/styles/themes"
+import { NavigationContainer } from "@react-navigation/native";
+import Routes from "./src/routes";
 
 export default function App() {
+  const deviceTheme = useColorScheme();
+  const theme = deviceTheme ? themes[deviceTheme] : themes.dark;
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <ThemeProvider theme={theme}>
+        <Routes />
+      </ThemeProvider>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
