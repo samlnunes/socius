@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   useColorScheme,
@@ -9,8 +9,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Container, Logo, Form } from "./styles";
 import { Button, TextField } from "../../components";
 import axios from "axios";
+import { useNavigation } from "@react-navigation/native";
+import Config from "react-native-config";
+import { jwtDecode } from "jwt-decode";
 
 const Login: React.FC = () => {
+  const apiUrl = "https://socius-company-api.azurewebsites.net/";
+  const navigation = useNavigation();
+
   const handleTouchablePress = () => {
     Keyboard.dismiss();
   };
@@ -21,7 +27,15 @@ const Login: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const baseUrl = "https://socius-company-api.azurewebsites.net/";
+  const getUserIdFromToken = (token: string) => {
+    try {
+      const decodedToken = jwtDecode(token);
+      return decodedToken.userId;
+    } catch (error: any) {
+      console.error("Erro ao decodificar o token:", error.message);
+      return null;
+    }
+  };
 
   const onSubmitFormHandler = async () => {
     if (!username.trim() || !password.trim()) {
@@ -29,15 +43,20 @@ const Login: React.FC = () => {
     }
 
     setIsLoading(true);
-
+    
     try {
-      const response = await axios.post(`${baseUrl}/auth/login`, {
+      const response = await axios.post(`${apiUrl}/auth/login`, {
         username,
         password,
       });
 
       if (response.status === 200) {
         await AsyncStorage.setItem("token", response.data.token);
+        // await AsyncStorage.setItem(
+        //   "userId",
+        //   getUserIdFromToken(response.data.token)
+        // );
+        navigation.navigate("mainTabs");
       } else {
         throw new Error("An error has occurred");
       }
@@ -47,6 +66,22 @@ const Login: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  const getJwt = async () => {
+    try {
+      const value = await AsyncStorage.getItem("token");
+
+      if (value) {
+        navigation.navigate("mainTabs");
+      }
+    } catch {
+    } finally {
+    }
+  };
+
+  useEffect(() => {
+    getJwt();
+  }, []);
 
   return (
     <TouchableWithoutFeedback onPress={handleTouchablePress}>

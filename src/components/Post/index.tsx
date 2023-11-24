@@ -1,5 +1,5 @@
-import { Dimensions, StyleSheet, TouchableOpacity, Text } from "react-native";
-import { useState } from "react";
+import { Dimensions, StyleSheet, TouchableOpacity } from "react-native";
+import { useEffect, useState } from "react";
 import {
   Container,
   ImageCustom,
@@ -11,21 +11,61 @@ import {
 } from "./styles";
 import Carousel, { Pagination } from "react-native-snap-carousel";
 import { Entypo, Feather } from "@expo/vector-icons";
+import Config from "react-native-config";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
+interface Post {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  content: string;
+  user: User;
+  likes?: User[] | null;
+  mediaUrls?: string[] | null;
+}
+
+export interface AuthoritiesEntity {
+  authority: string;
+}
+
+export interface User {
+  id: number;
+  username: string;
+  name: string;
+  lastname: string;
+  email: string;
+  enabled: boolean;
+  authorities?: AuthoritiesEntity[] | null;
+  accountNonExpired: boolean;
+  accountNonLocked: boolean;
+  credentialsNonExpired: boolean;
+}
 interface PostProps {
-  infos: any;
+  infos: Post;
 }
 
 const Post: React.FC<PostProps> = ({ infos }) => {
+  const apiUrl = "https://socius-company-api.azurewebsites.net/";
+
   const [activeSlide, setActiveSlide] = useState(0);
   const [clickCount, setClickCount] = useState(0);
   const [likePost, setLikePost] = useState(false);
 
-  const handleImagePress = () => {
+  const handleLikePost = async (postId: string) => {
+    try {
+      await axios.post(`${apiUrl}/${postId}/like`);
+    } catch (error) {
+      console.log("error");
+    }
+  };
+
+  const handleImagePress = (postId: string) => {
     setClickCount((prevCount) => prevCount + 1);
 
     if (clickCount === 1) {
       setLikePost(true);
+      handleLikePost(postId);
       setClickCount(0);
     } else {
       setTimeout(() => {
@@ -36,7 +76,7 @@ const Post: React.FC<PostProps> = ({ infos }) => {
 
   const renderPagination = () => (
     <Pagination
-      dotsLength={infos.mediaUrls.length}
+      dotsLength={infos?.mediaUrls?.length || 0}
       activeDotIndex={activeSlide}
       containerStyle={styles.paginationContainer}
       dotContainerStyle={styles.paginationDotContainer}
@@ -57,9 +97,12 @@ const Post: React.FC<PostProps> = ({ infos }) => {
       <>
         <Carousel
           layout="default"
-          data={infos.mediaUrls}
+          data={infos?.mediaUrls || []}
           renderItem={(item: any) => (
-            <TouchableOpacity onPress={handleImagePress} activeOpacity={1}>
+            <TouchableOpacity
+              onPress={() => handleImagePress(infos?.id)}
+              activeOpacity={1}
+            >
               <ImageCustom source={{ uri: item.item }} />
             </TouchableOpacity>
           )}

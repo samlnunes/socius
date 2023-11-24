@@ -3,12 +3,13 @@ import { FlatList, RefreshControl } from "react-native";
 import { Container } from "./styles";
 import axios from "axios";
 import { Post } from "../../components";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Config from "react-native-config";
 
 const Feed: React.FC = () => {
+  const apiUrl = "https://socius-company-api.azurewebsites.net/";
   const [posts, setPosts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-
-  const baseUrl = "https://socius-company-api.azurewebsites.net/";
 
   const onRefresh = useCallback(() => {
     getFeed();
@@ -18,17 +19,20 @@ const Feed: React.FC = () => {
     setRefreshing(true);
 
     try {
-      const response = await axios.get(`${baseUrl}/posts`, {
+      const token = await AsyncStorage.getItem("token");
+
+      const response = await axios.get(`${apiUrl}/posts`, {
         headers: {
-          Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzb2NpdXMtYXBpIiwic3ViIjoic2FtbnVuZXMiLCJleHAiOjE2OTk3NzU5NDV9.zdK4gAvUx4SFQTy0VvOJz7iLS5Tso8cF1PEJ9yKqJxQ`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (response.status === 200) {
         setPosts(response.data.content);
       }
-    } catch (e) {
-      console.log(e);
+    } catch (error: any) {
+      if (error?.response?.status === 403) {
+      }
     } finally {
       setRefreshing(false);
     }
