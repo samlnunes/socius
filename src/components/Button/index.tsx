@@ -1,16 +1,21 @@
 import React from "react";
 
-import { TouchableHighlightProps, Text } from "react-native";
+import { TouchableHighlightProps, ActivityIndicator } from "react-native";
 import { ButtonCustom, ButtonText } from "./styles";
 
 interface ButtonCustomProps extends TouchableHighlightProps {
   label: string;
+  isLoading?: boolean;
 }
 
-const Button: React.FC<ButtonCustomProps> = ({ label, ...rest }) => {
+const Button: React.FC<ButtonCustomProps> = ({ label, isLoading, ...rest }) => {
   return (
     <ButtonCustom {...rest}>
-      <ButtonText>{label}</ButtonText>
+      {isLoading ? (
+        <ActivityIndicator size="small" color="#fff" />
+      ) : (
+        <ButtonText>{label}</ButtonText>
+      )}
     </ButtonCustom>
   );
 };

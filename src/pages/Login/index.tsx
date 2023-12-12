@@ -5,16 +5,13 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Container, Logo, Form } from "./styles";
 import { Button, TextField } from "../../components";
-import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
-import Config from "react-native-config";
-import { jwtDecode } from "jwt-decode";
+import { api } from "../../services/api";
+import { getToken, setRefreshToken, setToken, setUserId } from "../../services/authStorage";
 
 const Login: React.FC = () => {
-  const apiUrl = "https://socius-company-api.azurewebsites.net/";
   const navigation = useNavigation();
 
   const handleTouchablePress = () => {
@@ -27,35 +24,24 @@ const Login: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const getUserIdFromToken = (token: string) => {
-    try {
-      const decodedToken = jwtDecode(token);
-      return decodedToken.userId;
-    } catch (error: any) {
-      console.error("Erro ao decodificar o token:", error.message);
-      return null;
-    }
-  };
-
   const onSubmitFormHandler = async () => {
     if (!username.trim() || !password.trim()) {
       return;
     }
 
     setIsLoading(true);
-    
+
     try {
-      const response = await axios.post(`${apiUrl}/auth/login`, {
+      const response = await api.post("/auth/login", {
         username,
         password,
       });
 
       if (response.status === 200) {
-        await AsyncStorage.setItem("token", response.data.token);
-        // await AsyncStorage.setItem(
-        //   "userId",
-        //   getUserIdFromToken(response.data.token)
-        // );
+        setToken(response.data.accessToken);
+        setRefreshToken(response.data.refreshToken)
+        setUserId(response.data.accessToken);
+        
         navigation.navigate("mainTabs");
       } else {
         throw new Error("An error has occurred");
@@ -68,14 +54,10 @@ const Login: React.FC = () => {
   };
 
   const getJwt = async () => {
-    try {
-      const value = await AsyncStorage.getItem("token");
+    const token = await getToken();
 
-      if (value) {
-        navigation.navigate("mainTabs");
-      }
-    } catch {
-    } finally {
+    if (token) {
+      navigation.navigate("mainTabs");
     }
   };
 
@@ -107,7 +89,11 @@ const Login: React.FC = () => {
             returnKeyType="join"
           />
 
-          <Button label="Entrar" onPress={onSubmitFormHandler} />
+          <Button
+            label="Entrar"
+            isLoading={isLoading}
+            onPress={onSubmitFormHandler}
+          />
         </Form>
       </Container>
     </TouchableWithoutFeedback>

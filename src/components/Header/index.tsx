@@ -13,8 +13,6 @@ const Header: React.FC = () => {
           <Logo source={require("../../assets/logo-light.png")} />
         )}
       </>
-
-      <Text>Oá</Text>
     </Container>
   );
 };

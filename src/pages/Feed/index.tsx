@@ -1,17 +1,20 @@
 import { useEffect, useState, useCallback } from "react";
 import { FlatList, RefreshControl } from "react-native";
 import { Container } from "./styles";
-import axios from "axios";
 import { Post } from "../../components";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import Config from "react-native-config";
+import { api } from "../../services/api";
+import { Post as PostType } from "../../types";
+import Skeleton from "./Skeleton";
 
 const Feed: React.FC = () => {
-  const apiUrl = "https://socius-company-api.azurewebsites.net/";
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<PostType[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(() => {
+    getFeed();
+  }, []);
+
+  useEffect(() => {
     getFeed();
   }, []);
 
@@ -19,35 +22,27 @@ const Feed: React.FC = () => {
     setRefreshing(true);
 
     try {
-      const token = await AsyncStorage.getItem("token");
-
-      const response = await axios.get(`${apiUrl}/posts`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await api.get("/posts");
 
       if (response.status === 200) {
         setPosts(response.data.content);
       }
     } catch (error: any) {
-      if (error?.response?.status === 403) {
-      }
+      console.log("feed", error);
     } finally {
       setRefreshing(false);
     }
   };
 
-  useEffect(() => {
-    getFeed();
-  }, []);
-
   return (
     <Container>
       <FlatList
         data={posts}
-        keyExtractor={(item: any) => item?.id.toString()}
-        renderItem={(item: any) => <Post infos={item?.item} />}
+        keyExtractor={(item) => item?.id}
+        renderItem={({ item }) => <Post infos={item} />}
+        ListEmptyComponent={() =>
+          Array.from({ length: 3 }).map((_, index) => <Skeleton key={index} />)
+        }
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />

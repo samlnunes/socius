@@ -12,18 +12,17 @@ export const ImageCustom = styled.Image`
 
 export const UserInfos = styled.View`
   width: 100%;
-  padding: 20px 10px;
+  padding: 20px 10px 10px 10px;
   display: flex;
   flex-direction: row;
   gap: 15px;
   align-items: center;
 `;
 
-export const Avatar = styled.View`
+export const Avatar = styled.Image`
   height: 35px;
   width: 35px;
-  background-color: blue;
-  border-radius: 100%;
+  border-radius: 17.5px;
 `;
 
 export const Username = styled.Text`
@@ -33,7 +32,7 @@ export const Username = styled.Text`
 
 export const ContentText = styled.Text`
   color: ${(props) => props.theme.color};
-  margin: 15px;
+  margin: 15px 15px 5px 15px;
 `;
 
 export const Footer = styled.View`
@@ -45,4 +44,11 @@ export const Footer = styled.View`
   justify-content: flex-start;
   position: relative;
   margin: 10px 15px 0 15px;
+`;
+
+export const Datetime = styled.Text`
+  color: ${(props) => props.theme.color};
+  opacity: 0.5;
+  font-size: 12px;
+  margin: 0 15px;
 `;

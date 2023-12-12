@@ -25,6 +25,24 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "env": {
+      "API_BASE_URL": "http://192.168.15.80:8080",
+      "DEBUG": "true"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
+        }        
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Socius to access your camera."
+        }
+      ]
+    ]
   }
 }
